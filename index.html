@@ -9,25 +9,31 @@
         #ad-top, #ad-bottom { position: fixed; left: 0; width: 100%; height: 150px; background: #333; z-index: 100; display: flex; align-items: center; justify-content: center; }
         #ad-top { top: 0; } #ad-bottom { bottom: 0; }
         iframe { border: none; width: 100%; height: 150px; }
-        #game-area { margin-top: 150px; height: calc(100vh - 300px); display: flex; flex-direction: column; align-items: center; justify-content: center; }
-        #grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 10px; }
+        
+        /* UIレイアウト修正 */
+        #game-area { margin-top: 150px; height: calc(100vh - 300px); position: relative; display: flex; flex-direction: column; align-items: center; }
+        
+        #header-ui { width: 100%; padding: 10px; display: flex; justify-content: space-around; align-items: center; z-index: 10; }
+        #ui { font-size: 22px; font-weight: bold; color: #1565c0; background: rgba(255,255,255,0.7); padding: 5px 15px; border-radius: 20px; }
+        #current-sum { font-size: 24px; font-weight: bold; color: #e91e63; background: white; padding: 5px 20px; border-radius: 20px; box-shadow: 0 3px #f8bbd0; }
+
+        #grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px; margin-top: 20px; }
         .num-card { 
-            width: 70px; height: 70px; background: white; color: #1e88e5; 
-            border-radius: 10px; display: flex; align-items: center; justify-content: center; 
-            font-size: 28px; font-weight: bold; cursor: pointer; box-shadow: 0 4px #bbdefb;
-            transition: transform 0.1s;
+            width: 75px; height: 75px; background: white; color: #1e88e5; 
+            border-radius: 12px; display: flex; align-items: center; justify-content: center; 
+            font-size: 32px; font-weight: bold; cursor: pointer; box-shadow: 0 5px #bbdefb;
+            transition: transform 0.1s, background 0.2s;
         }
-        .num-card.selected { background: #1e88e5; color: white; transform: scale(0.9); }
-        #ui { position: absolute; top: 160px; width: 100%; text-align: center; font-size: 24px; font-weight: bold; color: #1e88e5; }
-        #current-sum { font-size: 20px; color: #1565c0; margin-bottom: 10px; height: 24px; }
+        .num-card.selected { background: #ffeb3b; color: #333; transform: scale(0.9); box-shadow: none; }
+        
         #end-menu { 
             position: absolute; top: 150px; width: 100%; height: calc(100vh - 300px); 
             background: rgba(255,255,255,0.95); display: none; flex-direction: column; 
             align-items: center; justify-content: center; z-index: 60; 
         }
         .menu-btn { width: 220px; padding: 15px; margin: 10px; font-size: 20px; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; }
-        #retry-btn { background: #1e88e5; color: white; }
-        #more-games-btn { background: #ff4081; color: white; }
+        #retry-btn { background: #1e88e5; color: white; box-shadow: 0 5px #1565c0; }
+        #more-games-btn { background: #ff4081; color: white; box-shadow: 0 5px #c2185b; }
     </style>
 </head>
 <body>
@@ -35,14 +41,16 @@
     <div id="ad-bottom"><iframe src="ad.html"></iframe></div>
     
     <div id="end-menu">
-        <h2 id="result-msg" style="color:#1565c0;">合計を10にせよ！</h2>
+        <h2 id="result-msg" style="color:#1565c0; text-align:center;">合計を10にせよ！</h2>
         <button id="retry-btn" class="menu-btn" onclick="startNewGame()">スタート！</button>
         <a href="https://saaaachi.github.io/Namber-Order/" id="more-games-btn" class="menu-btn">他のゲームはこちら</a>
     </div>
 
-    <div id="ui">SCORE: 0</div>
     <div id="game-area">
-        <div id="current-sum">合計: 0</div>
+        <div id="header-ui">
+            <div id="ui">SCORE: 0</div>
+            <div id="current-sum">合計: 0</div>
+        </div>
         <div id="grid"></div>
     </div>
 
@@ -63,16 +71,12 @@
         function fillGrid() {
             grid.innerHTML = "";
             for(let i=0; i<16; i++) {
-                createCard();
+                const card = document.createElement("div");
+                card.className = "num-card";
+                card.innerText = Math.floor(Math.random() * 8) + 1;
+                card.onclick = () => tapCard(card);
+                grid.appendChild(card);
             }
-        }
-
-        function createCard() {
-            const card = document.createElement("div");
-            card.className = "num-card";
-            card.innerText = Math.floor(Math.random() * 8) + 1; // 1〜8の数字
-            card.onclick = () => tapCard(card);
-            grid.appendChild(card);
         }
 
         function tapCard(card) {
@@ -87,13 +91,12 @@
                 score++;
                 document.getElementById("ui").innerText = "SCORE: " + score;
                 selectedCards.forEach(c => {
-                    c.style.visibility = "hidden";
-                    // 代わりのカードを補充する（位置を維持するため中身だけ変える）
+                    c.style.transform = "scale(0)";
                     setTimeout(() => {
                         c.classList.remove('selected');
                         c.innerText = Math.floor(Math.random() * 8) + 1;
-                        c.style.visibility = "visible";
-                    }, 300);
+                        c.style.transform = "scale(1)";
+                    }, 200);
                 });
                 resetSelection();
                 resetTimer();
@@ -105,12 +108,11 @@
         function resetSelection() {
             currentSum = 0;
             selectedCards = [];
-            sumDisplay.innerText = "合計: 0";
+            setTimeout(() => { sumDisplay.innerText = "合計: 0"; }, 200);
         }
 
         function resetTimer() {
             clearTimeout(timer);
-            // 制限時間は10秒（スコアが上がると少しずつ短くなる）
             timer = setTimeout(() => { gameOver("時間切れ！⏳"); }, Math.max(3000, 10000 - score * 200));
         }
 
@@ -123,6 +125,4 @@
 
         window.onload = () => { document.getElementById("end-menu").style.display = "flex"; };
         setInterval(() => { const fs = document.querySelectorAll('iframe'); fs.forEach(f => { const s = f.src; f.src = "about:blank"; setTimeout(() => f.src = s, 100); }); }, 30000);
-    </script>
-</body>
-</html>
+    </
