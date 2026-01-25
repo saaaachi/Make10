@@ -10,25 +10,29 @@
         #ad-top { top: 0; } #ad-bottom { bottom: 0; }
         iframe { border: none; width: 100%; height: 150px; }
         
-        /* UIレイアウト修正 */
-        #game-area { margin-top: 150px; height: calc(100vh - 300px); position: relative; display: flex; flex-direction: column; align-items: center; }
+        /* 全体コンテナ */
+        #main-container { margin-top: 150px; height: calc(100vh - 300px); position: relative; display: flex; flex-direction: column; align-items: center; width: 100%; }
         
-        #header-ui { width: 100%; padding: 10px; display: flex; justify-content: space-around; align-items: center; z-index: 10; }
-        #ui { font-size: 22px; font-weight: bold; color: #1565c0; background: rgba(255,255,255,0.7); padding: 5px 15px; border-radius: 20px; }
-        #current-sum { font-size: 24px; font-weight: bold; color: #e91e63; background: white; padding: 5px 20px; border-radius: 20px; box-shadow: 0 3px #f8bbd0; }
+        /* UI（スコアと合計）を横並びに */
+        #header-ui { width: 100%; display: flex; justify-content: space-around; padding: 15px 0; z-index: 10; }
+        .ui-box { padding: 8px 15px; border-radius: 15px; font-weight: bold; font-size: 18px; box-shadow: 0 3px rgba(0,0,0,0.1); }
+        #ui { background: #bbdefb; color: #1565c0; }
+        #current-sum { background: #f8bbd0; color: #e91e63; }
 
-        #grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; padding: 10px; margin-top: 20px; }
+        /* 数字のグリッド */
+        #grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 15px; width: 90%; max-width: 400px; }
         .num-card { 
-            width: 75px; height: 75px; background: white; color: #1e88e5; 
+            aspect-ratio: 1/1; background: white; color: #1e88e5; 
             border-radius: 12px; display: flex; align-items: center; justify-content: center; 
-            font-size: 32px; font-weight: bold; cursor: pointer; box-shadow: 0 5px #bbdefb;
-            transition: transform 0.1s, background 0.2s;
+            font-size: 30px; font-weight: bold; cursor: pointer; box-shadow: 0 4px #bbdefb;
+            transition: transform 0.1s;
         }
-        .num-card.selected { background: #ffeb3b; color: #333; transform: scale(0.9); box-shadow: none; }
+        .num-card.selected { background: #ffeb3b; color: #333; transform: scale(0.9); box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }
         
+        /* メニュー画面 */
         #end-menu { 
-            position: absolute; top: 150px; width: 100%; height: calc(100vh - 300px); 
-            background: rgba(255,255,255,0.95); display: none; flex-direction: column; 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(255,255,255,0.95); display: flex; flex-direction: column; 
             align-items: center; justify-content: center; z-index: 60; 
         }
         .menu-btn { width: 220px; padding: 15px; margin: 10px; font-size: 20px; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; }
@@ -40,29 +44,32 @@
     <div id="ad-top"><iframe src="ad.html"></iframe></div>
     <div id="ad-bottom"><iframe src="ad.html"></iframe></div>
     
-    <div id="end-menu">
-        <h2 id="result-msg" style="color:#1565c0; text-align:center;">合計を10にせよ！</h2>
-        <button id="retry-btn" class="menu-btn" onclick="startNewGame()">スタート！</button>
-        <a href="https://saaaachi.github.io/Namber-Order/" id="more-games-btn" class="menu-btn">他のゲームはこちら</a>
-    </div>
-
-    <div id="game-area">
+    <div id="main-container">
         <div id="header-ui">
-            <div id="ui">SCORE: 0</div>
-            <div id="current-sum">合計: 0</div>
+            <div id="ui" class="ui-box">SCORE: 0</div>
+            <div id="current-sum" class="ui-box">合計: 0</div>
         </div>
+
         <div id="grid"></div>
+
+        <div id="end-menu">
+            <h2 id="result-msg" style="color:#1565c0; text-align:center; margin-bottom: 20px;">合計を10にせよ！</h2>
+            <button id="retry-btn" class="menu-btn" onclick="startNewGame()">スタート！</button>
+            <a href="https://saaaachi.github.io/Namber-Order/" id="more-games-btn" class="menu-btn">他のゲームはこちら</a>
+        </div>
     </div>
 
     <script>
         let score = 0, currentSum = 0, selectedCards = [], gameActive = false, timer;
         const grid = document.getElementById("grid");
         const sumDisplay = document.getElementById("current-sum");
+        const scoreDisplay = document.getElementById("ui");
+        const endMenu = document.getElementById("end-menu");
 
         function startNewGame() {
-            document.getElementById("end-menu").style.display = "none";
+            endMenu.style.display = "none";
             score = 0; currentSum = 0; selectedCards = []; gameActive = true;
-            document.getElementById("ui").innerText = "SCORE: 0";
+            scoreDisplay.innerText = "SCORE: 0";
             sumDisplay.innerText = "合計: 0";
             fillGrid();
             resetTimer();
@@ -89,7 +96,8 @@
 
             if(currentSum === 10) {
                 score++;
-                document.getElementById("ui").innerText = "SCORE: " + score;
+                scoreDisplay.innerText = "SCORE: " + score;
+                // 正解演出
                 selectedCards.forEach(c => {
                     c.style.transform = "scale(0)";
                     setTimeout(() => {
@@ -113,16 +121,26 @@
 
         function resetTimer() {
             clearTimeout(timer);
-            timer = setTimeout(() => { gameOver("時間切れ！⏳"); }, Math.max(3000, 10000 - score * 200));
+            // 最初はゆったり12秒、スコアが上がると短くなる
+            timer = setTimeout(() => { gameOver("時間切れ！⏳"); }, Math.max(3000, 12000 - score * 300));
         }
 
         function gameOver(msg) {
             gameActive = false;
             clearTimeout(timer);
             document.getElementById("result-msg").innerText = msg + "\nSCORE: " + score;
-            document.getElementById("end-menu").style.display = "flex";
+            endMenu.style.display = "flex";
+            document.getElementById("retry-btn").innerText = "もう一度遊ぶ";
         }
 
-        window.onload = () => { document.getElementById("end-menu").style.display = "flex"; };
-        setInterval(() => { const fs = document.querySelectorAll('iframe'); fs.forEach(f => { const s = f.src; f.src = "about:blank"; setTimeout(() => f.src = s, 100); }); }, 30000);
-    </
+        // 30秒広告リフレッシュ
+        setInterval(() => {
+            const fs = document.querySelectorAll('iframe');
+            fs.forEach(f => {
+                const s = f.src; f.src = "about:blank";
+                setTimeout(() => f.src = s, 100);
+            });
+        }, 30000);
+    </script>
+</body>
+</html>
