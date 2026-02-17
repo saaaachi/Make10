@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Make 10 - Ad Deluxe</title>
     <style>
+        /* 基本レイアウト */
         * { box-sizing: border-box; }
         body { margin: 0; overflow: hidden; background: #e3f2fd; font-family: sans-serif; touch-action: none; position: fixed; width: 100%; height: 100%; }
         
@@ -13,17 +14,17 @@
         #ad-top { top: 0; } #ad-bottom { bottom: 0; }
         iframe { border: none; width: 100%; height: 100px; }
 
-        /* ゲーム本体エリア */
+        /* ゲームエリア */
         #game-outer { position: absolute; top: 100px; bottom: 100px; left: 0; right: 0; background: #e3f2fd; overflow: hidden; }
         #main-container { height: 100%; position: relative; display: flex; flex-direction: column; align-items: center; width: 100%; }
         
         /* UI */
         #header-ui { width: 100%; display: flex; justify-content: space-around; padding: 10px 0; z-index: 10; flex-shrink: 0; }
-        .ui-box { padding: 5px 12px; border-radius: 12px; font-weight: bold; font-size: 16px; box-shadow: 0 3px rgba(0,0,0,0.1); }
+        .ui-box { padding: 8px 15px; border-radius: 12px; font-weight: bold; font-size: 16px; box-shadow: 0 3px rgba(0,0,0,0.1); }
         #ui { background: #bbdefb; color: #1565c0; }
         #current-sum { background: #f8bbd0; color: #e91e63; }
 
-        /* 数字のグリッド */
+        /* グリッド */
         #grid { 
             display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; 
             padding: 10px; width: 95%; max-width: 360px; flex-grow: 1; 
@@ -34,19 +35,25 @@
             border-radius: 10px; display: flex; align-items: center; justify-content: center; 
             font-size: 26px; font-weight: bold; cursor: pointer; box-shadow: 0 4px #bbdefb;
             transition: transform 0.1s, opacity 0.2s;
-            touch-action: none;
         }
         .num-card.selected { background: #ffeb3b; color: #333; transform: scale(0.9); box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }
         
-        /* メニュー画面 */
+        /* メニュー/リザルト画面 */
         #menuScreen { 
             position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(255,255,255,0.96); display: flex; flex-direction: column; 
+            background: rgba(255,255,255,0.98); display: flex; flex-direction: column; 
             align-items: center; justify-content: flex-start; z-index: 50; 
-            padding: 20px 0; overflow-y: auto; -webkit-overflow-scrolling: touch;
+            padding: 20px 0;
         }
 
-        /* 大広告オーバーレイ */
+        /* 収益の要：リザルト中バナー */
+        #mid-ad-container {
+            width: 300px; height: 250px; background: #f5f5f5; margin: 15px 0;
+            display: flex; align-items: center; justify-content: center;
+            border: 1px solid #ddd;
+        }
+
+        /* 大広告 */
         #bigAdScreen {
             position: absolute; top: 0; left: 0; width: 100%; height: 100%;
             background: rgba(0,0,0,0.9); z-index: 2000;
@@ -60,9 +67,10 @@
             align-items: center; justify-content: center; z-index: 2100;
         }
 
-        .menu-btn-group { display: flex; flex-direction: column; align-items: center; width: 100%; gap: 15px; margin-top: 20px; }
-        .menu-btn { width: 220px; padding: 12px; font-size: 18px; border: none; border-radius: 30px; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; }
+        .menu-btn-group { display: flex; flex-direction: column; align-items: center; width: 100%; gap: 12px; }
+        .menu-btn { width: 240px; padding: 15px; font-size: 18px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; transition: 0.3s; }
         #retry-btn { background: #1e88e5; color: white; box-shadow: 0 4px #1565c0; }
+        #retry-btn:disabled { background: #90a4ae; box-shadow: 0 4px #78909c; cursor: default; }
         #more-games-btn { background: #ff4081; color: white; box-shadow: 0 4px #c2185b; }
     </style>
 </head>
@@ -80,8 +88,14 @@
             <div id="grid"></div>
 
             <div id="menuScreen">
-                <h2 id="result-msg" style="color:#1565c0; margin: 10px 0; font-size: 24px;">Make 10</h2>
-                <p style="font-size: 13px; color: #666; margin: 0; text-align: center;">数字を選んで合計を10にせよ！</p>
+                <h2 id="result-msg" style="color:#1565c0; margin: 5px 0; font-size: 24px; text-align: center;">Make 10</h2>
+                
+                <div id="mid-ad-container">
+                    <div id="im-8b988d7b042a42d5b8df6921b628cf00">
+                        <script async src="https://imp-adedge.i-mobile.co.jp/script/v1/spot.js?20220104"></script>
+                        <script>(window.adsbyimobile=window.adsbyimobile||[]).push({pid:84561,mid:590804,asid:1924211,type:"banner",display:"inline",elementid:"im-8b988d7b042a42d5b8df6921b628cf00"})</script>
+                    </div>
+                </div>
                 
                 <div class="menu-btn-group">
                     <button id="retry-btn" class="menu-btn" onclick="startNewGame()">スタート！</button>
@@ -101,13 +115,11 @@
     <div id="ad-bottom"><iframe id="ifr-bottom" src="ad.html?pos=bottom"></iframe></div>
 
     <script>
-        // --- 広告自動更新（30秒） ---
+        // --- 広告リフレッシュ ---
         setInterval(() => {
-            const topAd = document.getElementById('ifr-top');
-            const bottomAd = document.getElementById('ifr-bottom');
             const now = Date.now();
-            if(topAd) topAd.src = 'ad.html?pos=top&t=' + now;
-            if(bottomAd) bottomAd.src = 'ad.html?pos=bottom&t=' + now;
+            document.getElementById('ifr-top').src = 'ad.html?pos=top&t=' + now;
+            document.getElementById('ifr-bottom').src = 'ad.html?pos=bottom&t=' + now;
         }, 30000);
 
         let score = 0, currentSum = 0, selectedCards = [], gameActive = false, timer, playCount = 0;
@@ -140,7 +152,6 @@
 
         function tapCard(card) {
             if(!gameActive || card.classList.contains('selected')) return;
-            
             card.classList.add('selected');
             selectedCards.push(card);
             currentSum += parseInt(card.innerText);
@@ -185,17 +196,23 @@
             clearTimeout(timer);
             
             resultMsg.innerText = msg + "\nSCORE: " + score;
-            retryBtn.innerText = "もう一度遊ぶ";
+            
+            // 収益化ディレイ：ボタンを一時的に無効化
+            retryBtn.innerText = "お待ちください...";
+            retryBtn.disabled = true;
+            menuScreen.style.display = "flex";
 
-            // ★ゆったり設定（3回目、以降7回おき）
+            setTimeout(() => {
+                retryBtn.disabled = false;
+                retryBtn.innerText = "もう一度遊ぶ";
+            }, 1500);
+
+            // 大広告フラグ
             if (playCount === 3 || (playCount > 3 && (playCount - 3) % 7 === 0)) {
-                showBigAd();
-            } else {
-                menuScreen.style.display = "flex";
+                setTimeout(showBigAd, 500);
             }
         }
 
-        // --- 大広告システム ---
         function showBigAd() {
             const screen = document.getElementById("bigAdScreen");
             const closeBtn = document.getElementById("ad-close-btn");
@@ -209,7 +226,6 @@
         function closeAd() {
             document.getElementById("bigAdScreen").style.display = "none";
             document.getElementById("ad-large-frame").src = "";
-            menuScreen.style.display = "flex";
         }
     </script>
 </body>
