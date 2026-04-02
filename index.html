@@ -3,37 +3,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Make 10 - Zen Mode</title>
+    <title>Make 10 - Max Revenue</title>
     <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1299640300068792" crossorigin="anonymous"></script>
     <style>
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
-        body { margin: 0; overflow: hidden; background: #fdfbf7; font-family: 'Helvetica Neue', Arial, sans-serif; position: fixed; width: 100%; height: 100%; display: flex; flex-direction: column; }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; overflow: hidden; background: #e3f2fd; font-family: 'Segoe UI', sans-serif; touch-action: none; position: fixed; width: 100%; height: 100%; display: flex; flex-direction: column; }
         
-        #ad-top-container { position: fixed; top: 0; left: 0; width: 100%; height: 100px; background: #fdfbf7; z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        /* 上部広告：100px固定 */
+        #ad-top-container { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100px; 
+            background: #e3f2fd; z-index: 9999; display: flex; justify-content: center; align-items: center; 
+        }
 
-        #game-outer { position: absolute; top: 100px; bottom: 0; left: 0; right: 0; background: #fdfbf7; overflow: hidden; z-index: 10; }
-        #main-container { height: 100%; display: flex; flex-direction: column; align-items: center; padding-top: 20px; }
+        /* ゲームエリア */
+        #game-outer { position: absolute; top: 100px; bottom: 0; left: 0; right: 0; background: #e3f2fd; overflow: hidden; z-index: 10; }
+        #main-container { height: 100%; display: flex; flex-direction: column; align-items: center; padding-bottom: 20px; }
         
-        #header-ui { width: 100%; display: flex; justify-content: space-around; padding: 10px 0; z-index: 20; }
-        .ui-box { padding: 12px 20px; border-radius: 15px; font-weight: bold; font-size: 20px; box-shadow: 0 4px rgba(0,0,0,0.05); min-width: 140px; text-align: center; background: #fff; border: 2px solid #eee; }
-        #ui { color: #2c3e50; }
-        #current-sum { color: #e74c3c; transition: transform 0.1s; }
+        /* UI */
+        #header-ui { width: 100%; display: flex; justify-content: space-around; padding: 15px 0; z-index: 20; }
+        .ui-box { padding: 10px 20px; border-radius: 20px; font-weight: bold; font-size: 18px; box-shadow: 0 4px rgba(0,0,0,0.05); min-width: 130px; text-align: center; }
+        #ui { background: #fff; color: #1e88e5; border: 2px solid #bbdefb; }
+        #current-sum { background: #fff; color: #e91e63; border: 2px solid #f8bbd0; transition: transform 0.1s; }
 
-        #grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 15px; width: 95%; max-width: 420px; flex-grow: 1; align-content: center; }
-        .num-card { aspect-ratio: 1/1; background: white; color: #444; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: bold; cursor: pointer; box-shadow: 0 6px #dcdde1; transition: 0.1s; border: 1px solid #f1f2f6; }
-        .num-card.selected { background: #ffeaa7; transform: scale(0.92); box-shadow: 0 2px #fdcb6e; border-color: #fdcb6e; color: #2d3436; }
+        /* グリッド */
+        #grid { 
+            display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; 
+            padding: 10px; width: 95%; max-width: 400px; flex-grow: 1; 
+            align-content: center; 
+        }
+        .num-card { 
+            aspect-ratio: 1/1; background: white; color: #1e88e5; 
+            border-radius: 12px; display: flex; align-items: center; justify-content: center; 
+            font-size: 32px; font-weight: bold; cursor: pointer; box-shadow: 0 5px #bbdefb;
+            transition: 0.1s;
+        }
+        .num-card.selected { background: #ffeb3b; color: #333; transform: scale(0.92); box-shadow: inset 0 2px 8px rgba(0,0,0,0.2); }
         
-        #menuScreen { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 200; padding: 10px; }
-        #ad-middle-box { width: 300px; height: 250px; background: #f5f5f5; margin: 20px 0; display: none; justify-content: center; align-items: center; border-radius: 12px; overflow: hidden; }
+        /* メニュー/リザルト画面 */
+        #menuScreen { 
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            background: rgba(255,255,255,0.98); display: flex; flex-direction: column; 
+            align-items: center; justify-content: center; z-index: 200; padding: 10px;
+        }
 
-        .menu-btn-group { display: flex; flex-direction: column; align-items: center; width: 100%; gap: 15px; }
-        .menu-btn { width: 280px; padding: 18px; font-size: 20px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; transition: 0.2s; }
-        #retry-btn { background: #3498db; color: white; box-shadow: 0 5px #2980b9; }
-        .link-btn { background: #e84393; color: white; box-shadow: 0 5px #c0392b; }
+        /* リザルト用 300x250 広告枠 */
+        #ad-middle-box {
+            width: 300px; height: 250px; background: #f5f5f5; margin: 15px 0;
+            display: none; justify-content: center; align-items: center; 
+            border-radius: 12px; overflow: hidden; border: 1px solid #ddd;
+        }
 
+        /* 5秒全画面広告 */
         #inter-screen { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.96); z-index: 99999; align-items: center; justify-content: center; }
         .inter-content { width: 330px; height: 330px; background: #fff; position: relative; border-radius: 8px; }
         #close-ad-btn { position: absolute; top: -50px; right: 0px; width: 45px; height: 45px; background: #333; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 22px; font-weight: bold; border: 2px solid #fff; cursor: pointer; }
+
+        .menu-btn-group { display: flex; flex-direction: column; align-items: center; width: 100%; gap: 12px; }
+        .menu-btn { width: 260px; padding: 16px; font-size: 18px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; text-decoration: none; text-align: center; transition: 0.2s; }
+        #retry-btn { background: #1e88e5; color: white; box-shadow: 0 4px #1565c0; }
+        #retry-btn:disabled { background: #999; box-shadow: none; opacity: 0.7; }
+        .link-btn { background: #ec407a; color: white; box-shadow: 0 4px #ad1457; }
     </style>
 </head>
 <body>
@@ -49,15 +78,21 @@
                 <div id="ui" class="ui-box">SCORE: 0</div>
                 <div id="current-sum" class="ui-box">SUM: 0</div>
             </div>
+
             <div id="grid"></div>
 
             <div id="menuScreen">
-                <h2 id="result-msg" style="color:#2980b9; margin: 10px 0; font-size: 36px;">Make 10</h2>
-                <p id="sub-msg" style="font-size: 16px; color: #636e72;">10を超えないように足していこう！</p>
+                <h2 id="result-msg" style="color:#1565c0; margin: 5px 0; font-size: 32px; text-align: center;">Make 10</h2>
+                <p id="sub-msg" style="font-size: 14px; color: #78909c; margin-top: 0;">数字を足して10を作ろう！</p>
+                
                 <div id="ad-middle-box">
-                    <ins class="adsbygoogle" style="display:inline-block;width:300px;height:250px" data-ad-client="ca-pub-1299640300068792" data-ad-slot="9050127185"></ins>
+                    <ins class="adsbygoogle"
+                         style="display:inline-block;width:300px;height:250px"
+                         data-ad-client="ca-pub-1299640300068792"
+                         data-ad-slot="9050127185"></ins>
                     <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
                 </div>
+
                 <div class="menu-btn-group">
                     <button id="retry-btn" class="menu-btn" onclick="startNewGame()">★ スタート ★</button>
                     <a href="https://saaaachi.github.io/" class="menu-btn link-btn">他のゲーム</a>
@@ -74,30 +109,22 @@
     </div>
 
     <script>
-        let score = 0, currentSum = 0, selectedCards = [], gameActive = false, playCount = 0;
-        
+        let score = 0, currentSum = 0, selectedCards = [], gameActive = false, timer, playCount = 0;
         const grid = document.getElementById("grid");
         const sumDisplay = document.getElementById("current-sum");
         const scoreDisplay = document.getElementById("ui");
         const menuScreen = document.getElementById("menuScreen");
+        const adMid = document.getElementById("ad-middle-box");
+        const resultMsg = document.getElementById("result-msg");
         const retryBtn = document.getElementById("retry-btn");
 
-        // 出現する数字を生成する関数（1〜4が75%、5〜9が25%）
-        function getNextNumber() {
-            if (Math.random() < 0.75) {
-                return Math.floor(Math.random() * 4) + 1; // 1, 2, 3, 4
-            } else {
-                return Math.floor(Math.random() * 5) + 5; // 5, 6, 7, 8, 9
-            }
-        }
-
         function startNewGame() {
-            menuScreen.style.display = "none";
-            document.getElementById("ad-middle-box").style.display = "none";
+            menuScreen.style.display = "none"; adMid.style.display = "none";
             score = 0; currentSum = 0; selectedCards = []; gameActive = true;
             scoreDisplay.innerText = "SCORE: 0";
             sumDisplay.innerText = "SUM: 0";
             fillGrid();
+            resetTimer();
         }
 
         function fillGrid() {
@@ -105,24 +132,14 @@
             for(let i=0; i<16; i++) {
                 const card = document.createElement("div");
                 card.className = "num-card";
-                card.innerText = getNextNumber();
+                card.innerText = Math.floor(Math.random() * 8) + 1;
                 card.onclick = () => tapCard(card);
                 grid.appendChild(card);
             }
         }
 
         function tapCard(card) {
-            if(!gameActive) return;
-
-            // キャンセル機能
-            if(card.classList.contains('selected')) {
-                card.classList.remove('selected');
-                selectedCards = selectedCards.filter(c => c !== card);
-                currentSum -= parseInt(card.innerText);
-                sumDisplay.innerText = "SUM: " + currentSum;
-                return;
-            }
-
+            if(!gameActive || card.classList.contains('selected')) return;
             card.classList.add('selected');
             selectedCards.push(card);
             currentSum += parseInt(card.innerText);
@@ -131,18 +148,24 @@
             if(currentSum === 10) {
                 score++;
                 scoreDisplay.innerText = "SCORE: " + score;
-                
-                selectedCards.forEach(c => {
+                // 合計表示を強調
+                sumDisplay.style.transform = "scale(1.2)";
+                setTimeout(() => sumDisplay.style.transform = "scale(1.0)", 100);
+
+                const tempSelected = [...selectedCards];
+                tempSelected.forEach(c => {
                     c.style.transform = "scale(0)";
+                    c.style.opacity = "0";
                     setTimeout(() => {
                         c.classList.remove('selected');
-                        c.innerText = getNextNumber();
+                        c.innerText = Math.floor(Math.random() * 8) + 1;
                         c.style.transform = "scale(1)";
-                    }, 200);
+                        c.style.opacity = "1";
+                    }, 250);
                 });
                 resetSelection();
+                resetTimer();
             } else if(currentSum > 10) {
-                // 10を超えたらゲームオーバー（スリル維持）
                 gameOver("10を超えちゃった！😱");
             }
         }
@@ -150,37 +173,58 @@
         function resetSelection() {
             currentSum = 0;
             selectedCards = [];
-            sumDisplay.innerText = "SUM: 0";
+            setTimeout(() => { sumDisplay.innerText = "SUM: 0"; }, 200);
+        }
+
+        function resetTimer() {
+            clearTimeout(timer);
+            // スコアに応じて難易度アップ
+            let limit = Math.max(2500, 10000 - score * 400);
+            timer = setTimeout(() => { gameOver("時間切れ！⏳"); }, limit);
         }
 
         function gameOver(msg) {
+            if (!gameActive) return;
             gameActive = false; playCount++;
-            document.getElementById("ad-middle-box").style.display = "flex";
-            document.getElementById("result-msg").innerText = msg;
+            clearTimeout(timer);
+            
+            retryBtn.innerText = "お待ちください..."; retryBtn.disabled = true;
+            adMid.style.display = "flex";
+            resultMsg.innerText = msg;
             document.getElementById("sub-msg").innerText = "最終スコア: " + score;
             menuScreen.style.display = "flex";
-            
-            retryBtn.disabled = true;
-            setTimeout(() => { retryBtn.disabled = false; }, 1000);
 
+            setTimeout(() => { retryBtn.disabled = false; retryBtn.innerText = "もう一度遊ぶ"; }, 1500);
+
+            // 【2-5-8 収益サイクル】
             if (playCount === 2 || (playCount >= 5 && (playCount - 2) % 3 === 0)) {
                 setTimeout(showInterAd, 500);
             }
         }
 
         function showInterAd() {
-            const screen = document.getElementById("inter-screen"), closeBtn = document.getElementById("close-ad-btn");
-            document.getElementById('ifr-inter').src = './ad.large.html?v=' + Date.now();
+            const screen = document.getElementById("inter-screen"), closeBtn = document.getElementById("close-ad-btn"), ifr = document.getElementById('ifr-inter');
+            ifr.src = './ad.large.html?v=' + Date.now();
             screen.style.display = "flex";
-            let t = 5;
-            closeBtn.innerText = t; closeBtn.style.pointerEvents = "none";
-            const cd = setInterval(() => {
-                t--; closeBtn.innerText = t > 0 ? t : "×";
-                if(t <= 0) { clearInterval(cd); closeBtn.style.pointerEvents = "auto"; closeBtn.style.background = "#ff4444"; }
+            let timerVal = 5;
+            closeBtn.innerText = timerVal; closeBtn.style.pointerEvents = "none"; closeBtn.style.background = "#555";
+            const countdown = setInterval(() => {
+                timerVal--;
+                if (timerVal > 0) closeBtn.innerText = timerVal;
+                else {
+                    clearInterval(countdown);
+                    closeBtn.innerText = "×";
+                    closeBtn.style.background = "#ff4444";
+                    closeBtn.style.pointerEvents = "auto";
+                }
             }, 1000);
         }
 
-        function closeInterAd() { document.getElementById("inter-screen").style.display = "none"; }
+        function closeInterAd() {
+            document.getElementById("inter-screen").style.display = "none";
+            document.getElementById('ifr-inter').src = 'about:blank';
+        }
+
         window.onload = () => { menuScreen.style.display = "flex"; };
     </script>
 </body>
